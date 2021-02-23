@@ -1,0 +1,65 @@
+---
+- name: Wordpress setup
+  hosts: all
+  tasks:
+   - name: install wordpress packages
+     dnf:
+      name: "{{ item }}"
+      state: latest
+     loop:
+      - mariadb
+      - mariadb-server
+      - php
+      - php-cli 
+      - php-curl 
+      - php-zip 
+      - php-mbstring 
+      - php-mysqlnd 
+      - php-pecl-json 
+      - php-bcmath 
+      - php-gd
+      - php-pecl-zip
+
+   - name: download wordpress
+     get_url:
+      url: https://wordpress.org/latest.tar.gz
+      dest: /var/www/
+
+   - name: Unarchive wordpress
+     unarchive:
+      src: /var/www/wordpress-5.6.2.tar.gz
+      dest: /var/www/
+      remote_src: yes
+
+   - name: chown apache wordpress
+     raw: chown -Rf apache:apache /var/www/wordpress/
+
+   - name: permission wordpress
+     raw: chmod -Rf 775 /var/www/wordpress/
+
+   - name: setfcontext
+     raw: semanage fcontext -a -t httpd_sys_rw_content_t "/var/www/wordpress(/.*)?"
+
+   - name: restorecon
+     raw: restorecon -R /var/www/wordpress
+
+   - name: Wordpress.conf
+     copy:
+      src: wordpress.conf
+      dest: /etc/httpd/conf.d/wordpress.conf
+
+   - name: Firewall
+     firewalld:
+      service: http
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+   - name: Start service
+     service:
+      name: "{{ item }}"
+      state: started
+      enabled: yes
+     loop:
+      - httpd
+      - mariadb

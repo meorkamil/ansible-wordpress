@@ -1,0 +1,4 @@
+mysql -u root -p
+CREATE DATABASE wordpress;
+GRANT ALL ON wordpress.* TO 'wordpress'@'localhost' IDENTIFIED BY 'secret';
+FLUSH PRIVILEGES;

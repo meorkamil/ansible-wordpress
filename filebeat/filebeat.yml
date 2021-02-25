@@ -1,0 +1,17 @@
+---
+- name: install filebeat
+  hosts: all
+  tasks:
+   - name: add key
+     raw: rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+   - name: add repo
+     copy:
+      src: elastic.repo
+      dest: /etc/yum.repos.d/elastic-repo.repo
+
+   - name: Install filebeat
+     yum: 
+      name: filebeat
+      state: latest
+      
